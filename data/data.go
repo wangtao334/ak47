@@ -1,5 +1,5 @@
 package data
 
 type Data interface {
-	Value(...interface{}) string
+	V(times int64) string
 }

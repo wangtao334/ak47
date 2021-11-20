@@ -14,7 +14,7 @@ type DateTimeFormat struct {
 	Layout string
 }
 
-func (d *DateTimeFormat) Value(_ ...interface{}) string {
+func (d *DateTimeFormat) V(_ int64) string {
 	if d.Layout == "" {
 		return strconv.FormatInt(time.Now().Unix(), 10)
 	}

@@ -14,7 +14,7 @@ var (
 )
 
 type Sampler interface {
-	Sample() *SampleResult
+	Sample(times int64) *SampleResult
 	Enabled() bool
 	Parse(userVariables []*data.Variable)
 }

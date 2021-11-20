@@ -3,6 +3,7 @@ package worker
 import (
 	"github.com/wangtao334/ak47/rate"
 	"github.com/wangtao334/ak47/sampler"
+	"go.uber.org/atomic"
 	"log"
 	"sync"
 	"time"
@@ -15,7 +16,9 @@ type Worker struct {
 	Duration int64
 	EndTime  int64
 	Rate     rate.Rate
+	Times    *atomic.Int64
 	Samplers []sampler.Sampler
+	t        int64
 }
 
 func (w *Worker) Do() {
@@ -41,9 +44,10 @@ func (w *Worker) duration() {
 }
 
 func (w *Worker) test() {
+	w.t = w.Times.Add(1)
 	for _, s := range w.Samplers {
 		if s.Enabled() {
-			s.Sample()
+			s.Sample(w.t)
 		}
 	}
 }

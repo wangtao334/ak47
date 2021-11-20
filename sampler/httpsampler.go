@@ -20,7 +20,7 @@ type HttpSampler struct {
 	Body    *data.Variable
 }
 
-func (h *HttpSampler) Sample() *SampleResult {
+func (h *HttpSampler) Sample(times int64) *SampleResult {
 	var err error
 	result := AcquireSampleResult()
 	result.StartTime = time.Now().UnixNano() / 1e6
@@ -30,18 +30,18 @@ func (h *HttpSampler) Sample() *SampleResult {
 		}
 		PutSampleResult(result)
 	}()
-	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(h.Body.Value))
+	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(h.Body.V(times)))
 	if err != nil {
 		result.Err = err
 		return result
 	}
 	queries := req.URL.Query()
 	for _, query := range h.Queries {
-		queries.Add(query.Name, query.Value)
+		queries.Add(query.Name, query.V(times))
 	}
 	req.URL.RawQuery = queries.Encode()
 	for _, header := range h.Headers {
-		req.Header.Add(header.Name, header.Value)
+		req.Header.Add(header.Name, header.V(times))
 	}
 	res, err := client.AcquireHttpClient().Do(req)
 	if err != nil {

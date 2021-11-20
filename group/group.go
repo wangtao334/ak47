@@ -5,6 +5,7 @@ import (
 	"github.com/wangtao334/ak47/rate"
 	"github.com/wangtao334/ak47/sampler"
 	"github.com/wangtao334/ak47/worker"
+	"go.uber.org/atomic"
 	"log"
 	"sync"
 	"time"
@@ -37,6 +38,8 @@ func (g *Group) Do() {
 		g.Rate.Init()
 	}
 
+	times := atomic.NewInt64(0)
+
 	var endTime int64
 	if g.Duration != 0 {
 		endTime = time.Now().UnixNano() + g.Duration*1e9
@@ -52,6 +55,7 @@ func (g *Group) Do() {
 			Duration: g.Duration,
 			EndTime:  endTime,
 			Rate:     g.Rate,
+			Times:    times,
 			Samplers: g.Samplers,
 		}
 		go wk.Do()

@@ -48,7 +48,7 @@ func (t *TestPlan) replaceVariables() error {
 					if fn == nil {
 						return errors.New(fmt.Sprintf("can not replace function - %s", exp))
 					}
-					v.Value = strings.Replace(v.Value, exp, fn.Value(), 1)
+					v.Value = strings.Replace(v.Value, exp, fn.V(0), 1)
 				}
 			}
 		}
