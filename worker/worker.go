@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"github.com/wangtao334/ak47/rate"
 	"github.com/wangtao334/ak47/sampler"
 	"log"
 	"sync"
@@ -13,11 +14,12 @@ type Worker struct {
 	Loops    int
 	Duration int64
 	EndTime  int64
+	Rate     rate.Rate
 	Samplers []sampler.Sampler
 }
 
 func (w *Worker) Do() {
-	log.Printf("worker : %d started", w.WorkerId + 1)
+	log.Printf("worker : %d started", w.WorkerId+1)
 	defer w.Wait.Done()
 	if w.EndTime != 0 {
 		w.duration()
@@ -27,13 +29,13 @@ func (w *Worker) Do() {
 }
 
 func (w *Worker) loops() {
-	for i := 0; i < w.Loops; i++ {
+	for i := 0; w.Rate.Take() && i < w.Loops; i++ {
 		w.test()
 	}
 }
 
 func (w *Worker) duration() {
-	for time.Now().UnixNano() < w.EndTime {
+	for w.Rate.Take() && time.Now().UnixNano() < w.EndTime {
 		w.test()
 	}
 }
