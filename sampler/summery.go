@@ -46,7 +46,7 @@ func StartSummery() {
 		}
 		elapsedTime := result.EndTime - result.StartTime
 		statistics[strAll].TotalElapsedTime += elapsedTime
-		result.Release()
+		ReleaseSampleResult(result)
 		now := time.Now().Unix()
 		if now-pre >= 5 {
 			outputSummery()

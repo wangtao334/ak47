@@ -14,7 +14,7 @@ var (
 )
 
 type Sampler interface {
-	Sample(times int64) *SampleResult
+	Sample(int64, map[string]*data.Variable) *SampleResult
 	Enabled() bool
 	Parse(userVariables []*data.Variable)
 }
@@ -28,7 +28,7 @@ type SampleResult struct {
 	Err          error
 }
 
-func (s *SampleResult) Release() {
+func (s *SampleResult) Reset() {
 	s.Name = ""
 	s.StartTime = 0
 	s.EndTime = 0
@@ -42,6 +42,6 @@ func AcquireSampleResult() *SampleResult {
 }
 
 func ReleaseSampleResult(result *SampleResult) {
-	result.Release()
+	result.Reset()
 	sampleResultPool.Put(result)
 }

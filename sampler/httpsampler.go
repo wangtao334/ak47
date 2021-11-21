@@ -20,7 +20,7 @@ type HttpSampler struct {
 	Body    *data.Variable
 }
 
-func (h *HttpSampler) Sample(times int64) *SampleResult {
+func (h *HttpSampler) Sample(times int64, m map[string]*data.Variable) *SampleResult {
 	var err error
 	result := AcquireSampleResult()
 	result.StartTime = time.Now().UnixNano() / 1e6
@@ -30,18 +30,18 @@ func (h *HttpSampler) Sample(times int64) *SampleResult {
 		}
 		PutSampleResult(result)
 	}()
-	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(h.Body.V(times)))
+	req, err := http.NewRequest(h.Method, h.Url, strings.NewReader(h.Body.V(times, m)))
 	if err != nil {
 		result.Err = err
 		return result
 	}
 	queries := req.URL.Query()
 	for _, query := range h.Queries {
-		queries.Add(query.Name, query.V(times))
+		queries.Add(query.Name, query.V(times, m))
 	}
 	req.URL.RawQuery = queries.Encode()
 	for _, header := range h.Headers {
-		req.Header.Add(header.Name, header.V(times))
+		req.Header.Add(header.Name, header.V(times, m))
 	}
 	res, err := client.AcquireHttpClient().Do(req)
 	if err != nil {
@@ -78,6 +78,17 @@ func (h *HttpSampler) Parse(userVariables []*data.Variable) {
 			h.Body.Value = strings.ReplaceAll(h.Body.Value, name, value)
 		}
 	}
+
+	for _, v := range h.Queries {
+		v.Parse()
+	}
+	for _, v := range h.Headers {
+		v.Parse()
+	}
+	if h.Body != nil {
+		h.Body.Parse()
+	}
+
 	if h.Body == nil {
 		h.Body = &data.Variable{}
 	}

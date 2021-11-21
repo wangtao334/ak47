@@ -47,7 +47,7 @@ func (g *Group) Do() {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(g.WorkerNum)
-	for i := 0; i < g.WorkerNum; i++ {
+	for i := 1; i <= g.WorkerNum; i++ {
 		wk := &worker.Worker{
 			Wait:     wg,
 			WorkerId: i,

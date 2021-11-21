@@ -12,6 +12,7 @@ import (
 
 type TestPlan struct {
 	Name      string
+	CSVFiles  []string
 	Variables []*data.Variable
 	Groups    []*group.Group
 }
@@ -19,12 +20,19 @@ type TestPlan struct {
 func (t *TestPlan) Do() error {
 	log.Printf("test plan : %s started", t.Name)
 
-	log.Printf("replace user variables and functions")
+	log.Println("load csv files")
+	for _, path := range t.CSVFiles {
+		if err := data.LoadCSV(path); err != nil {
+			return err
+		}
+	}
+
+	log.Println("replace user variables and functions")
 	if err := t.replaceVariables(); err != nil {
 		return err
 	}
 
-	log.Printf("parse sampler variables and functions")
+	log.Println("parse sampler variables and functions")
 	t.parseSamplers()
 
 	log.Println("test started")
@@ -48,7 +56,7 @@ func (t *TestPlan) replaceVariables() error {
 					if fn == nil {
 						return errors.New(fmt.Sprintf("can not replace function - %s", exp))
 					}
-					v.Value = strings.Replace(v.Value, exp, fn.V(0), 1)
+					v.Value = strings.Replace(v.Value, exp, fn.V(0, nil), 1)
 				}
 			}
 		}

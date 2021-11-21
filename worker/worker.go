@@ -1,10 +1,12 @@
 package worker
 
 import (
+	"github.com/wangtao334/ak47/data"
 	"github.com/wangtao334/ak47/rate"
 	"github.com/wangtao334/ak47/sampler"
 	"go.uber.org/atomic"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -19,11 +21,19 @@ type Worker struct {
 	Times    *atomic.Int64
 	Samplers []sampler.Sampler
 	t        int64
+	m        map[string]*data.Variable
 }
 
 func (w *Worker) Do() {
 	log.Printf("worker : %d started", w.WorkerId+1)
 	defer w.Wait.Done()
+	w.m = make(map[string]*data.Variable)
+
+	// inner variables
+	w.m["__workerId"] = &data.Variable{
+		Value: strconv.Itoa(w.WorkerId),
+	}
+
 	if w.EndTime != 0 {
 		w.duration()
 	} else {
@@ -47,7 +57,7 @@ func (w *Worker) test() {
 	w.t = w.Times.Add(1)
 	for _, s := range w.Samplers {
 		if s.Enabled() {
-			s.Sample(w.t)
+			s.Sample(w.t, w.m)
 		}
 	}
 }

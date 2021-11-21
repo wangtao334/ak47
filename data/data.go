@@ -1,5 +1,5 @@
 package data
 
 type Data interface {
-	V(times int64) string
+	V(int64, map[string]*Variable) string
 }
