@@ -25,7 +25,7 @@ type Worker struct {
 }
 
 func (w *Worker) Do() {
-	log.Printf("worker : %d started", w.WorkerId+1)
+	log.Printf("worker : %d started", w.WorkerId)
 	defer w.Wait.Done()
 	w.m = make(map[string]*data.Variable)
 
